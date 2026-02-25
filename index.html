@@ -1,41 +1,733 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>上海景点地图</title>
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shanghai Wander - 城市漫步导览</title>
+  <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<!-- 高德地图 JS SDK -->
-<script src="https://webapi.amap.com/maps?v=2.0&key=a3a156e36cd059689c07f14cf8b0be96"></script>
+        html, body {
+            height: 100%;
+            width: 100%;
+            font-family: 'Segoe UI', 'Noto Sans SC', sans-serif;
+        }
 
-<!-- ✅ CSS（注意相对路径） -->
-<link rel="stylesheet" href="./src/frontend/css/style.css">
-</head>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f1f5f9;
+            line-height: 1.6;
+        }
 
-<body>
+        main {
+            height: 100%;
+            width: 100%;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
 
-<div id="mapContainer"></div>
+        /* Navigation */
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(100, 200, 255, 0.2);
+            padding: 1rem 2rem;
+            z-index: 1000;
+            width: 100%;
+        }
 
-    
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-<!-- 搜索浮窗 -->
-<div id="search-box">
-    <input type="text" id="search-input" placeholder="🔍 搜索景点名称 / Searching..." />
-    <button id="search-clear">✖</button>
-</div>
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #64b5f6, #42a5f5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
 
-<!-- 分类浮窗 -->
-<div id="legend">
-    <div id="legend-header">
-        <span>景点分类</span>
-        <span id="legend-toggle">▾</span>
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        nav a:hover {
+            color: #64b5f6;
+        }
+
+        .lang-toggle {
+            display: flex;
+            gap: 0.5rem;
+            border-left: 1px solid rgba(100, 200, 255, 0.3);
+            padding-left: 1.5rem;
+        }
+
+        .lang-btn {
+            background: rgba(100, 181, 246, 0.2);
+            border: 1px solid rgba(100, 181, 246, 0.5);
+            color: #cbd5e1;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .lang-btn.active {
+            background: #64b5f6;
+            color: #0f172a;
+            border-color: #64b5f6;
+        }
+
+        .lang-btn:hover {
+            border-color: #64b5f6;
+        }
+
+        .bilingual {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .zh {
+            display: block;
+        }
+
+        .en {
+            display: none;
+            font-size: 0.9em;
+            color: #94a3b8;
+            font-weight: 300;
+        }
+
+        body.english .zh {
+            display: none;
+        }
+
+        body.english .en {
+            display: block;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 5rem 2rem;
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            line-height: 1.2;
+            background: linear-gradient(135deg, #64b5f6, #42a5f5, #2196f3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .subtitle {
+            font-size: 1.3rem;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #64b5f6, #42a5f5);
+            color: #0f172a;
+            box-shadow: 0 4px 15px rgba(66, 165, 245, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(66, 165, 245, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(100, 181, 246, 0.2);
+            color: #64b5f6;
+            border: 2px solid #64b5f6;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(100, 181, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Features Grid */
+        .features {
+            padding: 4rem 2rem;
+            background: rgba(30, 41, 59, 0.5);
+            margin: 2rem 0;
+        }
+
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #f1f5f9;
+            font-weight: 700;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(100, 200, 255, 0.2);
+            padding: 2rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-card:hover {
+            border-color: rgba(100, 200, 255, 0.5);
+            background: rgba(30, 41, 59, 0.95);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(66, 165, 245, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+            color: #64b5f6;
+        }
+
+        .feature-card p {
+            color: #cbd5e1;
+            font-size: 0.95rem;
+        }
+
+        /* Routes Section */
+        .routes {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .route-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .route-card {
+            background: rgba(100, 181, 246, 0.1);
+            border: 2px solid rgba(100, 181, 246, 0.3);
+            padding: 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #f1f5f9;
+            display: block;
+        }
+
+        .route-card:hover {
+            border-color: #64b5f6;
+            background: rgba(100, 181, 246, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .route-card .route-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #42a5f5;
+            margin-bottom: 0.5rem;
+        }
+
+        .route-card .route-desc {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+        }
+
+        .route-card .route-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: #64b5f6;
+        }
+
+        /* Impact Section */
+        .impact {
+            padding: 4rem 2rem;
+            background: rgba(30, 41, 59, 0.5);
+            margin: 2rem 0;
+        }
+
+        .impact-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .impact-item {
+            text-align: center;
+        }
+
+        .impact-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #64b5f6;
+            margin-bottom: 0.5rem;
+        }
+
+        .impact-label {
+            color: #cbd5e1;
+            font-size: 0.95rem;
+        }
+
+        /* Data Sources Section */
+        .data-sources {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .source-item {
+            background: rgba(30, 41, 59, 0.8);
+            border-left: 4px solid #64b5f6;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .source-item h4 {
+            color: #64b5f6;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .source-item p {
+            color: #cbd5e1;
+            font-size: 0.95rem;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(15, 23, 42, 0.8);
+            border-top: 1px solid rgba(100, 200, 255, 0.2);
+            padding: 2rem;
+            text-align: center;
+            color: #94a3b8;
+            margin-top: 3rem;
+        }
+
+        footer p {
+            margin-bottom: 0.5rem;
+        }
+
+        footer .social-links {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        footer a {
+            color: #64b5f6;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: #42a5f5;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .hero .subtitle {
+                font-size: 1rem;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav a {
+                font-size: 0.85rem;
+            }
+
+            .hero {
+                padding: 3rem 1rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .route-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .lang-toggle {
+                border-left: none;
+                border-top: 1px solid rgba(100, 200, 255, 0.3);
+                padding-left: 0;
+                padding-top: 1rem;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <header>
+   <nav>
+    <div class="logo">
+     🏙️ Shanghai Wander
     </div>
-    <div id="legend-content"></div>
-</div>
+    <div class="nav-links"><a href="#features"><span class="zh">特色功能</span><span class="en">Features</span></a> <a href="#routes"><span class="zh">路线</span><span class="en">Routes</span></a> <a href="#impact"><span class="zh">社会影响</span><span class="en">Impact</span></a> <a href="#sources"><span class="zh">数据来源</span><span class="en">Data</span></a>
+     <div class="lang-toggle"><button class="lang-btn active" id="zhBtn" onclick="setLanguage('zh')">中文</button> <button class="lang-btn" id="enBtn" onclick="setLanguage('en')">English</button>
+     </div>
+    </div>
+   </nav>
+  </header>
+  <main><!-- Hero Section -->
+   <section class="hero">
+    <h1><span class="zh">上海漫步 · 真实导览</span><span class="en">Shanghai Wander · Authentic Guide</span></h1>
+    <p class="subtitle"><span class="zh">打破信息壁垒，发现真实的城市魅力</span><span class="en">Breaking Information Barriers, Discovering Authentic Urban Charm</span></p>
+    <p style="color: #94a3b8; margin-bottom: 2rem; font-size: 1rem;"><span class="zh">为追求品质和真实性的年轻游客精心设计的城市漫步指南</span><span class="en">A City Walk Guide Carefully Designed for Young Travelers Seeking Quality and Authenticity</span></p>
+    <div class="cta-buttons"><button class="btn btn-primary" onclick="scrollTo('routes')"><span class="zh">探索路线</span><span class="en">Explore Routes</span></button> <button class="btn btn-secondary" onclick="scrollTo('features')"><span class="zh">了解更多</span><span class="en">Learn More</span></button>
+    </div>
+   </section><!-- Features Section -->
+   <section class="features" id="features">
+    <div class="features-container">
+     <h2 class="section-title">✨ <span class="zh">核心功能</span><span class="en">Core Features</span></h2>
+     <div class="grid">
+        <a href="https://www.google.com/maps/d/edit?mid=1Cw7F4gLPhHjKbadAA0Wviw7_bOmdhpk&usp=sharing" target="_blank" style="text-decoration: none; display: block;">
+  <div class="feature-card fade-in">
+    <div class="feature-icon">
+      🗺️
+    </div>
+    <h3><span class="zh">交互式地图</span><span class="en">Interactive Map</span></h3>
+    <p><span class="zh">基于Google Maps的交互式平台，整合社交媒体数据、真实点评和消费信息，帮助用户做出明智决策。</span><span class="en">An interactive platform based on Google Maps that integrates social media data, authentic reviews, and consumption information to help users make informed decisions.</span></p>
+  </div>
+</a>
+<a href="https://chatbot-kjrzot0l1kh.streamlit.app" class="feature-link">
+  <div class="feature-card fade-in">
+    <div class="feature-icon">💬</div>
+    <h3>
+      <span class="zh">旅游AI小助理</span>
+      <span class="en">Shanghai Wander Chatbot</span>
+    </h3>
+    <p>
+      <span class="zh">搭载AI大模型API，打造智能旅游助手，实时解答旅行疑问，提供精准、便捷的一站式出行咨询。</span>
+      <span class="en">Powered by advanced LLM API, our AI travel assistant provides real-time answers and one-stop consultation for a smoother travel experience.</span>
+    </p>
+  </div>
+</a>
+      <div class="feature-card fade-in">
+       <div class="feature-icon">
+        💡
+       </div>
+       <h3><span class="zh">政府赋能下文旅新发展</span><span class="en">Government-led Urban Renewal & Community contribution</span></h3>
+       <p><span class="zh">依托城市更新，打造一批兼具文化科普，青年潮流与公共活力的新型文旅空间，提升社区共享价值，助力高质量发展。</span><span class="en">Create new cultural and tourism spaces that integrate science popularization, youth trends, and public vitality to enhance community value and promote high-quality development.</span></p>
+      </div>
+      <a href="https://fionachen623.github.io/Shanghai_Wander/" class="feature-link">
+  <div class="feature-card fade-in">
+    <div class="feature-icon">🎯</div>
+    <h3>
+      <span class="zh">高德智能筛选</span>
+      <span class="en">Smart Filtering</span>
+    </h3>
+    <p>
+      <span class="zh">按标签、价格区间、特色分类筛选，快速找到符合需求和预算的目的地。</span>
+      <span class="en">Filter by tags, price ranges, and categories to quickly find destinations that match your needs and budget.</span>
+    </p>
+  </div>
+</a>
+<a href="https://shanghai.8684.com.cn/" class="feature-link">
+  <div class="feature-card fade-in">
+    <div class="feature-icon">🚌</div>
+    <h3>
+      <span class="zh">交通推荐</span>
+      <span class="en">Transit Recommendations</span>
+    </h3>
+    <p>
+      <span class="zh">整合周边公交交通信息，帮助用户规划高效的路线和出行方式。</span>
+      <span class="en">Integrates nearby public transit information to help users plan efficient routes and transportation methods.</span>
+    </p>
+  </div>
+</a>
+      <div class="feature-card fade-in">
+       <div class="feature-icon">
+        📸
+       </div>
+       <h3><span class="zh">摄影指南</span><span class="en">Photography Guide</span></h3>
+       <p><span class="zh">提供每个地点的最佳拍摄建议和真实场景指导，避免"期望与现实的落差"。</span><span class="en">Provides optimal photography tips and authentic scene guidance for each location, avoiding the gap between expectations and reality.</span></p>
+      </div>
+      
+     </div>
+    </div>
+   </section><!-- Routes Section -->
+   <section class="routes" id="routes">
+    <h2 class="section-title">🌟 <span class="zh">五条精选路线</span><span class="en">Five Featured Routes</span></h2>
+    <div class="route-grid"><a href="#" class="route-card">
+      <div class="route-name">
+       <span class="zh">愚园路</span><span class="en">Yuyuan Road</span>
+      </div>
+      <div class="route-desc">
+       <span class="zh">文艺复古氛围浓厚，集聚个性小店与艺术空间</span><span class="en">Artistic vintage atmosphere with boutique shops and art spaces</span>
+      </div>
+      <div class="route-stats"><span>🏪 <span class="zh">20+ 商户</span><span class="en">20+ Stores</span></span> <span>⭐ 4.5/5</span>
+      </div></a> <a href="#" class="route-card">
+      <div class="route-name">
+       <span class="zh">安福路</span><span class="en">Anfu Road</span>
+      </div>
+      <div class="route-desc">
+       <span class="zh">时尚社区典范，融合国际品牌与本地设计</span><span class="en">Fashion community model blending international brands and local design</span>
+      </div>
+      <div class="route-stats"><span>🏪 <span class="zh">25+ 商户</span><span class="en">25+ Stores</span></span> <span>⭐ 4.3/5</span>
+      </div></a> <a href="#" class="route-card">
+      <div class="route-name">
+       <span class="zh">武康路</span><span class="en">Wukang Road</span>
+      </div>
+      <div class="route-desc">
+       <span class="zh">历史建筑荟萃，欧洲建筑风格集中区</span><span class="en">Historic architecture hub with concentrated European-style buildings</span>
+      </div>
+      <div class="route-stats"><span>🏛️ <span class="zh">15+ 景点</span><span class="en">15+ Attractions</span></span> <span>⭐ 4.7/5</span>
+      </div></a> <a href="#" class="route-card">
+      <div class="route-name">
+       <span class="zh">人民广场</span><span class="en">People's Square</span>
+      </div>
+      <div class="route-desc">
+       <span class="zh">城市中心地标，文化艺术汇聚之地</span><span class="en">Urban center landmark where culture and arts converge</span>
+      </div>
+      <div class="route-stats"><span>🎭 <span class="zh">8+ 展馆</span><span class="en">8+ Museums</span></span> <span>⭐ 4.4/5</span>
+      </div></a> <a href="#" class="route-card">
+      <div class="route-name">
+       <span class="zh">淮海路</span><span class="en">Huaihai Road</span>
+      </div>
+      <div class="route-desc">
+       <span class="zh">购物天堂与文化融合，高端消费与平民体验并存</span><span class="en">Shopping destination blending culture with premium and accessible experiences</span>
+      </div>
+      <div class="route-stats"><span>🛍️ <span class="zh">30+ 商户</span><span class="en">30+ Stores</span></span> <span>⭐ 4.2/5</span>
+      </div></a>
+    </div>
+   </section><!-- Impact Section -->
+   <section class="impact" id="impact">
+    <div class="impact-container">
+     <h2 class="section-title">🌱 <span class="zh">社会影响</span><span class="en">Social Impact</span></h2>
+     <div class="impact-grid">
+      <div class="impact-item">
+       <div class="impact-number">
+        ↓ 30%
+       </div>
+       <div class="impact-label">
+        <span class="zh">减少碳排放和资源浪费</span><span class="en">Reduce Carbon Emissions &amp; Waste</span>
+       </div>
+      </div>
+      <div class="impact-item">
+       <div class="impact-number">
+        💰
+       </div>
+       <div class="impact-label">
+        <span class="zh">帮助优化消费预算</span><span class="en">Optimize Consumption Budget</span>
+       </div>
+      </div>
+      <div class="impact-item">
+       <div class="impact-number">
+        ✓
+       </div>
+       <div class="impact-label">
+        <span class="zh">SDG 11 &amp; 12 对标</span><span class="en">SDG 11 &amp; 12 Aligned</span>
+       </div>
+      </div>
+      <div class="impact-item">
+       <div class="impact-number">
+        👥
+       </div>
+       <div class="impact-label">
+        <span class="zh">赋能普通市民话语权</span><span class="en">Empower Citizen Voices</span>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Data Sources Section -->
+   <section class="data-sources" id="sources">
+    <h2 class="section-title">📚 <span class="zh">数据治理</span><span class="en">Data Governance</span></h2>
+    <div class="source-item">
+     <h4>🏛️ <span class="zh">官方开放数据</span><span class="en">Official Open Data</span></h4>
+     <p><span class="zh">来源：上海市文化和旅游局。提供经过验证的公共设施、文化场所的准确信息，作为地图绘制的可靠基线。</span><span class="en">Source: Shanghai Culture and Tourism Bureau. Provides verified information on public facilities and cultural sites as a reliable baseline for mapping.</span></p>
+    </div>
+    <div class="source-item">
+     <h4>✍️ <span class="zh">设计师手工收集数据</span><span class="en">Designer-Curated Data</span></h4>
+     <p><span class="zh">通过系统化的数据收集流程（社交媒体信息筛选 → 内容分析 → 消费等级评估），确保初版的深度与准确性。</span><span class="en">Systematic data collection process (social media filtering → content analysis → consumption assessment) ensures depth and accuracy of initial version.</span></p>
+    </div>
+    <div class="source-item">
+     <h4>👥 <span class="zh">用户众包反馈</span><span class="en">User Crowdsourced Feedback</span></h4>
+     <p><span class="zh">收集真实用户体验和点评，所有数据清晰标注来源和采集日期。社交媒体数据经过隐私保护处理。</span><span class="en">Collects authentic user experiences and reviews with clear source attribution and collection dates. Social media data undergoes privacy protection.</span></p>
+    </div>
+    <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(100, 181, 246, 0.1); border-radius: 8px; border: 1px solid rgba(100, 181, 246, 0.3);">
+     <h4 style="color: #64b5f6; margin-bottom: 0.8rem;">🔒 <span class="zh">透明与责任</span><span class="en">Transparency &amp; Accountability</span></h4>
+     <p style="color: #cbd5e1;"><span class="zh">我们承诺以透明和负责任的态度构建这一社区资源。所有数据点均清晰标注来源和更新日期，确保用户能够追溯信息的可信度。</span><span class="en">We commit to building this community resource with transparency and accountability. All data points are clearly labeled with source and date to ensure traceability and credibility.</span></p>
+    </div>
+   </section><!-- Footer -->
+   <footer>
+    <p><strong>Shanghai Wander</strong> - <span class="zh">城市漫步导览平台</span><span class="en">City Walk Guide Platform</span></p>
+    <p><span class="zh">为年轻游客打破信息壁垒，发现上海的真实魅力</span><span class="en">Breaking information barriers for young travelers to discover Shanghai's authentic charm</span></p>
+    <div class="social-links"><a href="#"><span class="zh">关于项目</span><span class="en">About</span></a> <a href="#"><span class="zh">数据政策</span><span class="en">Data Policy</span></a> <a href="#"><span class="zh">反馈表单</span><span class="en">Feedback</span></a> <a href="#"><span class="zh">联系我们</span><span class="en">Contact</span></a>
+    </div>
+    <p style="margin-top: 1.5rem; font-size: 0.85rem;">© 2024 Shanghai Wander. <span class="zh">致力于可持续消费和城市文化探索。</span><span class="en">Dedicated to sustainable consumption and urban cultural exploration.</span></p>
+   </footer>
+  </main>
+  <script>
+        function setLanguage(lang) {
+            if (lang === 'en') {
+                document.body.classList.add('english');
+                document.getElementById('zhBtn').classList.remove('active');
+                document.getElementById('enBtn').classList.add('active');
+                localStorage.setItem('language', 'en');
+            } else {
+                document.body.classList.remove('english');
+                document.getElementById('zhBtn').classList.add('active');
+                document.getElementById('enBtn').classList.remove('active');
+                localStorage.setItem('language', 'zh');
+            }
+        }
 
+        function scrollTo(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
 
+        // Load saved language preference
+        const savedLang = localStorage.getItem('language') || 'zh';
+        setLanguage(savedLang);
 
-<!-- ✅ JS（放在 body 最后） -->
-<script src="./src/frontend/js/main.js"></script>
-</body>
+        // Add fade-in animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cc4ce3505652f7c',t:'MTc3MDgyMjk2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
