@@ -1,0 +1,16 @@
+field_name,data_type,description,source,used_in_visualization
+name,string,Official name of the point of interest,Shanghai Top-100 POI Dataset,yes
+type,string,"Category or type of place (e.g., cultural site, park, cafe)",Manual annotation,yes
+address,string,Street-level address of the POI,Shanghai Top-100 POI Dataset,yes
+phone,string,Official contact phone number,Shanghai Top-100 POI Dataset,no
+website,string,Official website URL,Shanghai Top-100 POI Dataset,no
+source_link,string,Original webpage link for the POI,Qunar Travel,yes
+description,text,Long-form descriptive text introducing the POI,Qunar Travel,yes
+opening_hours,string,Opening hours in human-readable format,Qunar Travel,yes
+rating,float,"User rating score (e.g., 4.5 out of 5)",Qunar Travel,yes
+recommended_duration,string,Suggested visiting duration,Qunar Travel,no
+recommended_season,string,Suggested season for visiting,Qunar Travel,no
+ticket_info,string,Ticket price and related information,Qunar Travel,no
+tips,text,Visitor tips and practical notes,Qunar Travel,yes
+lng,float,Longitude in WGS84 coordinate system,Geocoding API,yes
+lat,float,Latitude in WGS84 coordinate system,Geocoding API,yes
