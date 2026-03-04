@@ -1,0 +1,191 @@
+/* ---------------- 全局 ---------------- */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue",
+                 Helvetica, Arial, "PingFang SC", "Hiragino Sans GB",
+                 "Microsoft YaHei", sans-serif;
+}
+
+#mapContainer {
+    width: 100%;
+    height: 100vh;
+}
+
+/* ---------------- 信息窗 ---------------- */
+.amap-info-window {
+    max-width: 520px !important;
+    padding: 0 !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2) !important;
+}
+
+/* 主内容背景 */
+.info-content {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 13px;
+    color: #333;
+    line-height: 1.5;
+}
+
+/* 标题 */
+.info-content h3 {
+    margin: 0 0 12px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #222;
+}
+
+/* 每行信息容器 */
+.info-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(245,245,245,0.8);
+    margin-bottom: 6px;
+    transition: background 0.2s;
+}
+
+/* hover 高亮 */
+.info-row:hover {
+    background: rgba(240,240,240,0.95);
+}
+
+/* 图标占位，用 ::before 添加 Emoji */
+.icon {
+    flex-shrink: 0;
+    width: 18px;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* 各类图标 */
+.icon-score::before     { content: "⭐"; }
+.icon-address::before   { content: "📍"; }
+.icon-phone::before     { content: "📞"; }
+.icon-website::before   { content: "🌐"; }
+.icon-time::before      { content: "⏰"; }
+.icon-playtime::before  { content: "🕒"; }
+.icon-ticket::before    { content: "🎟️"; }
+.icon-link::before      { content: "🔗"; }
+
+/* 文字 */
+.info-row p {
+    margin: 0;
+    font-size: 13px;
+    color: #444;
+}
+
+/* 分割线 */
+.info-row + .info-row {
+    border-top: 1px solid rgba(200,200,200,0.25);
+}
+
+
+
+
+/* ---------------- 分类浮窗 ---------------- */
+#legend {
+    position: absolute;
+    top: 14px;
+    right: 28px;
+    z-index: 999;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    padding: 12px 14px;
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+    font-size: 13px;
+    width: 340px;
+    max-width: 400px;
+}
+
+#legend-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 6px;
+    color: #222;
+}
+
+#legend-toggle {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+#legend-content.collapsed {
+    display: none;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0;
+    cursor: pointer;
+    user-select: none;
+    padding: 3px 6px;
+    border-radius: 5px;
+    transition: background 0.2s, font-weight 0.2s;
+}
+
+.legend-item:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.legend-item.active {
+    background: rgba(0, 0, 0, 0.12);
+    font-weight: 600;
+}
+
+.legend-item.active::after {
+    content: "✔";
+    margin-left: auto;
+    font-size: 12px;
+}
+
+.color-box {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* ---------------- 搜索浮窗 ---------------- */
+#search-box {
+    position: absolute;
+    top: 14px;
+    left: 28px; /* 左上角位置 */
+    z-index: 999;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    padding: 8px 12px;
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+#search-box input {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 13px;
+    width: 180px;
+}
+
+#search-box button {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+}
+
